@@ -40,10 +40,13 @@ export function verifyToken(token: string): JWTPayload | null {
 }
 
 export function getTokenFromRequest(req: NextRequest): string | null {
-  // 1. Authorization header: "Bearer <token>"
+  // 1. Authorization header: "Bearer <token>" or raw token
   const authHeader = req.headers.get("authorization");
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    return authHeader.substring(7).trim();
+  if (authHeader) {
+    if (authHeader.toLowerCase().startsWith("bearer ")) {
+      return authHeader.substring(7).trim();
+    }
+    return authHeader.trim();
   }
 
   // 2. Cookie
@@ -53,6 +56,12 @@ export function getTokenFromRequest(req: NextRequest): string | null {
   }
 
   return null;
+}
+
+export function authenticateRequest(req: NextRequest): JWTPayload | null {
+  const token = getTokenFromRequest(req);
+  if (!token) return null;
+  return verifyToken(token);
 }
 
 export function setAuthCookie(res: NextResponse, token: string) {

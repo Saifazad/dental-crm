@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { CreditCard, X, Check } from "lucide-react";
 import { Invoice } from "@/types/crm";
+import { trackedFetch } from "@/lib/api-logger";
 
 interface CollectPaymentModalProps {
   isOpen: boolean;
@@ -43,17 +44,21 @@ export default function CollectPaymentModal({
       const newBalance = Math.max(0, Number(invoice.amount_total) - newPaid);
       const newStatus = newBalance === 0 ? "Paid in Full" : "Partially Paid";
 
-      const res = await fetch("/api/v1/invoices", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: invoice.id,
-          amount_paid: newPaid,
-          amount_balance: newBalance,
-          payment_status: newStatus,
-          payment_method: method,
-        }),
-      });
+      const res = await trackedFetch(
+        "/api/v1/invoices",
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: invoice.id,
+            amount_paid: newPaid,
+            amount_balance: newBalance,
+            payment_status: newStatus,
+            payment_method: method,
+          }),
+        },
+        "Update Invoice Payment & Balance"
+      );
 
       if (res.ok) {
         onUpdated();

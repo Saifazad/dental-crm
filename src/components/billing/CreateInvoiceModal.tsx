@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Receipt, X, Plus } from "lucide-react";
 import { Service, Patient } from "@/types/crm";
+import { trackedFetch } from "@/lib/api-logger";
 
 interface CreateInvoiceModalProps {
   isOpen: boolean;
@@ -61,21 +62,25 @@ export default function CreateInvoiceModal({
     setIsSubmitting(true);
     try {
       const todayISO = new Date().toISOString().split("T")[0];
-      const res = await fetch("/api/v1/invoices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          patient_name: patientName,
-          patient_phone: patientPhone,
-          treatment_name: treatmentName,
-          amount_total: amountTotal,
-          amount_paid: amountPaid,
-          amount_balance: amountBalance,
-          payment_status: paymentStatus,
-          payment_method: paymentMethod,
-          invoice_date: todayISO,
-        }),
-      });
+      const res = await trackedFetch(
+        "/api/v1/invoices",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patient_name: patientName,
+            patient_phone: patientPhone,
+            treatment_name: treatmentName,
+            amount_total: amountTotal,
+            amount_paid: amountPaid,
+            amount_balance: amountBalance,
+            payment_status: paymentStatus,
+            payment_method: paymentMethod,
+            invoice_date: todayISO,
+          }),
+        },
+        "Create Patient Invoice & Billing Record"
+      );
 
       if (res.ok) {
         onCreated();
