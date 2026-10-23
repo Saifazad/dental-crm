@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPool } from "@/lib/db";
+import { authenticateRequest } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const user = authenticateRequest(req);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Please login or provide a valid API key to view appointments." },
+      { status: 401 }
+    );
+  }
+
   const pool = getPool();
   try {
     const { rows } = await pool.query(
@@ -14,6 +23,14 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const user = authenticateRequest(req);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Please login or provide a valid API key to book appointments." },
+      { status: 401 }
+    );
+  }
+
   const pool = getPool();
   try {
     const body = await req.json();
@@ -125,6 +142,14 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const user = authenticateRequest(req);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Please login or provide a valid API key to update appointments." },
+      { status: 401 }
+    );
+  }
+
   const pool = getPool();
   try {
     const body = await req.json();
@@ -156,6 +181,14 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const user = authenticateRequest(req);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Please login or provide a valid API key to delete appointments." },
+      { status: 401 }
+    );
+  }
+
   const pool = getPool();
   try {
     const { searchParams } = new URL(req.url);
