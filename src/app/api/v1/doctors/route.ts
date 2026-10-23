@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPool } from "@/lib/db";
+import { authenticateRequest } from "@/lib/auth";
 
 // GET: Fetch all doctors & their shifts
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const user = authenticateRequest(req);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Please login or provide a valid API key to view doctors." },
+      { status: 401 }
+    );
+  }
+
   const pool = getPool();
   try {
     const { rows } = await pool.query("SELECT * FROM doctors ORDER BY id ASC");
@@ -14,6 +23,14 @@ export async function GET() {
 
 // POST: Add new Doctor & Shift
 export async function POST(req: NextRequest) {
+  const user = authenticateRequest(req);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Please login or provide a valid API key to add doctors." },
+      { status: 401 }
+    );
+  }
+
   const pool = getPool();
   try {
     const body = await req.json();
@@ -62,6 +79,14 @@ export async function POST(req: NextRequest) {
 
 // PUT: Edit existing Doctor & Shift details
 export async function PUT(req: NextRequest) {
+  const user = authenticateRequest(req);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Please login or provide a valid API key to edit doctors." },
+      { status: 401 }
+    );
+  }
+
   const pool = getPool();
   try {
     const body = await req.json();
@@ -122,6 +147,14 @@ export async function PUT(req: NextRequest) {
 
 // PATCH: Quick toggle availability status
 export async function PATCH(req: NextRequest) {
+  const user = authenticateRequest(req);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Please login or provide a valid API key to toggle doctor availability." },
+      { status: 401 }
+    );
+  }
+
   const pool = getPool();
   try {
     const { id, is_available } = await req.json();
@@ -138,6 +171,14 @@ export async function PATCH(req: NextRequest) {
 
 // DELETE: Delete Doctor & Shift
 export async function DELETE(req: NextRequest) {
+  const user = authenticateRequest(req);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Please login or provide a valid API key to remove doctors." },
+      { status: 401 }
+    );
+  }
+
   const pool = getPool();
   try {
     const url = new URL(req.url);

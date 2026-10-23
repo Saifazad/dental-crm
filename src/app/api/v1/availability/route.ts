@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPool } from "@/lib/db";
+import { authenticateRequest } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
+  const user = authenticateRequest(req);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized. Please login or provide a valid API key to check appointment availability." },
+      { status: 401 }
+    );
+  }
+
   const pool = getPool();
   const searchParams = req.nextUrl.searchParams;
   const dateStr = searchParams.get("date") || new Date().toISOString().split("T")[0];

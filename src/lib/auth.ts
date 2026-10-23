@@ -58,9 +58,37 @@ export function getTokenFromRequest(req: NextRequest): string | null {
   return null;
 }
 
+export const CRM_API_KEY = process.env.CRM_API_KEY || "dental_crm_api_secret_key_2026";
+
 export function authenticateRequest(req: NextRequest): JWTPayload | null {
+  // 1. Check x-api-key header (for Voice Agent / automated CRM clients)
+  const apiKeyHeader = req.headers.get("x-api-key");
+  if (apiKeyHeader && apiKeyHeader.trim() === CRM_API_KEY.trim()) {
+    return {
+      id: "api_service",
+      email: "service@dentalcrm.internal",
+      name: "API Service Key",
+      role: "admin",
+      clinic_id: "clinic_001",
+    };
+  }
+
+  // 2. Check token (from Authorization Bearer or dental_crm_token Cookie)
   const token = getTokenFromRequest(req);
   if (!token) return null;
+
+  // Check if Bearer token is the API Key
+  if (token.trim() === CRM_API_KEY.trim()) {
+    return {
+      id: "api_service",
+      email: "service@dentalcrm.internal",
+      name: "API Service Key",
+      role: "admin",
+      clinic_id: "clinic_001",
+    };
+  }
+
+  // 3. Verify JWT token
   return verifyToken(token);
 }
 
